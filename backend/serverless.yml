@@ -2,7 +2,7 @@
 org: vinvader137
 app: serverless-app1
 service: serverless-app1
-framework: "3.27.0"
+frameworkVersion: "3.27.0"
 
 plugins:
   - serverless-webpack
@@ -29,7 +29,7 @@ provider:
     ATTACHMENT_S3_BUCKET: serverless-app1-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     PROJECT_NAME: serverless-app1
-    #INDEX_NAME: ${self:provider.environment.TODOS.CREATED_AT_INDEX}
+    INDEX_NAME: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
 
   logs:
     # Enable API Gateway logs
@@ -46,16 +46,16 @@ provider:
 
 
 functions:
-#    hello:
-#      handler: handler.hello
-#      events:
-#        - httpApi:
-#            path: /
-#            method: get
+   hello:
+     handler: src/handler.hello
+     events:
+       - httpApi:
+           path: /
+           method: get
 
 
-  Auth:
-    handler: src/lambda/auth/auth0Authorizer.handler
+  # Auth:
+  #   handler: src/lambda/auth/auth0Authorizer.handler
 
   # TODO: Configure this function - 
   # Provide iamRoleStatements property for performing Actions on DynamoDB
@@ -74,28 +74,28 @@ functions:
   # To refer to an AWS resource defined in the "Resources" section, you can use "Resource: !GetAtt <resource-name>.Arn"
   # To validate incoming HTTP requests, we have provided the request schemas in function definition below. 
 
-  CreateTodo:
-    handler: src/lambda/http/createTodo.handler
-    events:
-      - http:
-          method: post
-          path: todos
-          cors: true
-  #         authorizer: Auth
-  #         request:
-  #           schemas:
-  #             application/json: ${file(models/create-todo-model.json)}
-  #iamRoleStatementsName: ${self:provider.environment.PROJECT_NAME}-create-todo-role-${self:provider.stage}
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:PutItem
-      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-    - Effect: Allow
-      Action:
-        - xray:PutTraceSegments
-      Resource: 
-        - '*'
+  # CreateTodo:
+  #   handler: src/lambda/http/createTodo.handler
+  #   events:
+  #     - http:
+  #         method: post
+  #         path: todos
+  #         cors: true
+          # authorizer: Auth
+          # request:
+          #   schemas:
+          #     application/json: ${file(models/create-todo-model.json)}
+  #iamRoleStatementsName: serverless-app1-create-todo-role-${self:provider.stage}
+  # iamRoleStatements:
+  #     - Effect: Allow
+  #       Action:
+  #         - dynamodb: PutItem
+  #       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+  #     - Effect: Allow
+  #       Action:
+  #         - xray: PutTraceSegments
+  #       Resource: 
+  #         - '*'
 
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements, and request schemas
@@ -133,93 +133,93 @@ resources:
     # TODO: Fill the properties
     # Feel free to change the names as you like. 
 
-    GatewayResponseDefault4XX:
-     Type: AWS::ApiGateway::GatewayResponse
-     Properties:
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token'"
-        gatewayresponse.header.Access-Control-Allow-Methods: "'GET, OPTIONS, POST'"
-      ResponseType: DEFAULT_4XX
-      RestApiId:
-        Ref: APIGatewayRestApi
+    # GatewayResponseDefault4XX:
+    #  Type: AWS::ApiGateway::GatewayResponse
+    #  Properties:
+    #   ResponseParameters:
+    #     gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+    #     gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token'"
+    #     gatewayresponse.header.Access-Control-Allow-Methods: "'GET, OPTIONS, POST'"
+    #   ResponseType: DEFAULT_4XX
+    #   RestApiId:
+    #     Ref: APIGatewayRestApi
 
-    GatewayResponseDefault5XX:
-     Type: AWS::ApiGateway::GatewayResponse
-     Properties:
-      ResponseParameters:
-        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-        gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token'"
-        gatewayresponse.header.Access-Control-Allow-Methods: "'GET, OPTIONS, POST, DELETE, PATCH, PUT'"
-      ResponseType: DEFAULT_5XX
-      RestApiId:
-        Ref: APIGatewayRestApi
+    # GatewayResponseDefault5XX:
+    #  Type: AWS::ApiGateway::GatewayResponse
+    #  Properties:
+    #   ResponseParameters:
+    #     gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+    #     gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token'"
+    #     gatewayresponse.header.Access-Control-Allow-Methods: "'GET, OPTIONS, POST, DELETE, PATCH, PUT'"
+    #   ResponseType: DEFAULT_5XX
+    #   RestApiId:
+    #     Ref: APIGatewayRestApi
     # TODO: Create a DynamoDB table with local secondary index and a composite key
 
     # TodosTable:
-    TodosTable: 
-     Type: AWS::DynamoDB::Table
-     Properties: 
-      AttributeDefinitions: 
-        - AttributeName: userId
-          AttributeType: S
-        - AttributeName: todoId
-          AttributeType: S
-        - AttributeName: createdAt
-          AttributeType: S
-      KeySchema: 
-        - AttributeName: userId
-          KeyType: "HASH"
-        - AttributeName: todoId
-          KeyType: "RANGE"
-      BillingMode: PAY_PER_REQUEST
-      TableName: ${self:provider.environment.TODOS_TABLE}
-      LocalSecondaryIndexes:
-         - IndexName: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
-           KeySchema:
-             - AttributeName: userId
-               KeyType: HASH
-             - AttributeName: createdAt
-               KeyType: RANGE
-           Projection:
-             ProjectionType: ALL 
+    # TodosTable: 
+    #  Type: AWS::DynamoDB::Table
+    #  Properties: 
+    #   AttributeDefinitions: 
+    #     - AttributeName: userId
+    #       AttributeType: S
+    #     - AttributeName: todoId
+    #       AttributeType: S
+    #     - AttributeName: createdAt
+    #       AttributeType: S
+    #   KeySchema: 
+    #     - AttributeName: userId
+    #       KeyType: "HASH"
+    #     - AttributeName: todoId
+    #       KeyType: "RANGE"
+    #   BillingMode: PAY_PER_REQUEST
+    #   TableName: ${self:provider.environment.TODOS_TABLE}
+    #   LocalSecondaryIndexes:
+    #      - IndexName: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
+    #        KeySchema:
+    #          - AttributeName: userId
+    #            KeyType: HASH
+    #          - AttributeName: createdAt
+    #            KeyType: RANGE
+    #        Projection:
+    #          ProjectionType: ALL 
 
     # TODO: Complete the bucket properties below. 
     # Do not forget to add the CorsConfiguration propoerty
 
     # AttachmentsBucket:
-    AttachmentsBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:provider.environment.ATTACHMENT_S3_BUCKET}
-        CorsConfiguration:
-          CorsRules:
-            -
-              AllowedOrigins:
-                - '*'
-              AllowedHeaders:
-                - '*'
-              AllowedMethods:
-                - GET
-                - PUT
-                - POST
-                - DELETE
-                - HEAD
-              MaxAge: 3000
+    # AttachmentsBucket:
+    #   Type: AWS::S3::Bucket
+    #   Properties:
+    #     BucketName: ${self:provider.environment.ATTACHMENT_S3_BUCKET}
+    #     CorsConfiguration:
+    #       CorsRules:
+    #         -
+    #           AllowedOrigins:
+    #             - '*'
+    #           AllowedHeaders:
+    #             - '*'
+    #           AllowedMethods:
+    #             - GET
+    #             - PUT
+    #             - POST
+    #             - DELETE
+    #             - HEAD
+    #           MaxAge: 3000
     # TODO: Complete the policy below and attach it to the bucket defined above
     # For cross referencing the name of the bucket, use "!Ref AttachmentsBucket"
 
     # BucketPolicy:
-    BucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        PolicyDocument:
-          Id: MyPolicy
-          Version: "2012-10-17"
-          Statement:
-            - Sid: PublicReadForGetBucketObjects
-              Effect: Allow
-              Principal: '*'
-              Action: 's3:GetObject'
-              Resource: 'arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*'
-        Bucket: !Ref AttachmentsBucket
+    # BucketPolicy:
+    #   Type: AWS::S3::BucketPolicy
+    #   Properties:
+    #     PolicyDocument:
+    #       Id: MyPolicy
+    #       Version: "2012-10-17"
+    #       Statement:
+    #         - Sid: PublicReadForGetBucketObjects
+    #           Effect: Allow
+    #           Principal: '*'
+    #           Action: 's3:GetObject'
+    #           Resource: 'arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*'
+    #     Bucket: !Ref AttachmentsBucket
