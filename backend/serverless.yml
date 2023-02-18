@@ -45,7 +45,7 @@ provider:
           Resource: "*"
 
 
-# functions:
+functions:
 #    hello:
 #      handler: handler.hello
 #      events:
