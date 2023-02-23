@@ -1,5 +1,5 @@
 import { TodosAccess } from '../dataLayer/todosAcess'
-import { AttachmentUtils } from '../helpers/attachmentUtils';
+// import { AttachmentUtils } from '../helpers/attachmentUtils';
 import { TodoItem } from '../models/TodoItem'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 //import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
@@ -9,8 +9,17 @@ import * as uuid from 'uuid'
 
 // TODO: Implement businessLogic
 const logger = createLogger('TodosAccess')
-const attachmentUtils = new AttachmentUtils()
+// const attachmentUtils = new AttachmentUtils()
 const todosAccess = new TodosAccess()
+
+const s3BucketName = process.env.ATTACHMENT_S3_BUCKET
+
+
+//write Get todo function
+export async function getTodosForUser(userId: string): Promise<TodoItem[]>{
+    logger.info('Get todos function is called')
+    return await todosAccess.getAllTodos(userId)
+}
 
 //write Create todo function
 export async function createTodo(
@@ -24,7 +33,7 @@ export async function createTodo(
         todoId,
         createdAt,
         done: false,
-        attachmentUrl: '',
+        attachmentUrl: `https://${s3BucketName}.s3.amazonaws.com/${todoId}`,
         ...createTodoRequest
     }
     logger.info('Create todo item called')
