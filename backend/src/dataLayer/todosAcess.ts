@@ -70,16 +70,18 @@ export class TodosAccess{
         return todoUpdate 
     }
 
-    async deleteTodoItem(todoId: string, userId: string): Promise<void>{
+    async deleteTodoItem(todoId: string, userId: string): Promise<string>{
         logger.info('Delete todo item function called')
 
-        await this.docClient.delete({
+        const result = await this.docClient.delete({
             TableName: this.todosTable,
             Key: {
                 todoId,
                 userId
             }
         }).promise()
+        logger.info('Todo item deleted', result)
+        return todoId as string
     }
 
     async updateTodoAttachmentUrl(todoId: string, userId: string, attachmentUrl: string): Promise<void>{
