@@ -17,8 +17,8 @@ export const handler = middy(
     console.log ( 'userId: ', userId )
     await updateTodo(
       todoId,
-      userId,
-      updatedTodo
+      updatedTodo,
+      userId
     )
 
     return {

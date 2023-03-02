@@ -19,7 +19,7 @@ const s3BucketName = process.env.ATTACHMENT_S3_BUCKET
 //write Get todo function
 export async function getTodosForUser(userId: string): Promise<TodoItem[]>{
     logger.info('Get todos function is called')
-    return await todosAccess.getAllTodos(userId)
+    return todosAccess.getAllTodos(userId)
 }
 
 //write Create todo function
@@ -44,9 +44,10 @@ export async function createTodo(
 //write Update todo function
 export async function updateTodo(
     todoId: string,
-    userId: string,
-    todoUpdate: UpdateTodoRequest
-): Promise<UpdateTodoRequest>{
+    todoUpdate: UpdateTodoRequest,
+    userId: string
+    
+    ): Promise<TodoUpdate>{
     logger.info('Update todo function is called')
     return todosAccess.updateTodoItem(todoId, userId, todoUpdate)
 }
@@ -55,7 +56,7 @@ export async function updateTodo(
 export async function deleteTodo(
     todoId: string,
     userId: string
-): Promise<string>{
+    ): Promise<string>{
     logger.info('Delete todo function is called')
     return todosAccess.deleteTodoItem(todoId, userId)
 }
@@ -64,7 +65,7 @@ export async function deleteTodo(
 export async function createAttachmentPresignedUrl(
     todoId: string,
     userId: string
-): Promise<string>{
+    ): Promise<string>{
     logger.info('Generate upload url function is called', todoId, userId)
     return attachmentUtils.getUploadUrl(todoId)
 }
