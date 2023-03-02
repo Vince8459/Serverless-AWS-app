@@ -15,7 +15,7 @@ export class TodosAccess{
     constructor( private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
         private readonly todosTable = process.env.TODOS_TABLE,
         private readonly todosIndex = process.env.TODOS_INDEX
-        ){}
+    ) {}
 
     
     async getAllTodos(userId: string): Promise<TodoItem[]>{
@@ -46,10 +46,11 @@ export class TodosAccess{
         return todoItem as TodoItem
     }
 
-    async updateTodoItem(todoId: string, userId: string, todoUpdate: TodoUpdate): Promise<TodoUpdate>{
+    async updateTodoItem(todoId: string, userId: string, todoUpdate: TodoUpdate
+        ): Promise<TodoUpdate>{
         logger.info('Update todo item called')
 
-        await this.docClient.update({
+        const result = await this.docClient.update({
             TableName: this.todosTable,
             Key: {
                 todoId,
@@ -63,11 +64,17 @@ export class TodosAccess{
             },
             ExpressionAttributeNames: {
                 '#name': 'name'
-            }
+            },
+            ReturnValues: 'ALL_NEW'
         })
         .promise()
 
-        return todoUpdate 
+        const todoItemUpdate = result.Attributes 
+        logger.info ('Todo item updated', todoItemUpdate)
+        return todoItemUpdate as TodoUpdate
+
+        //logger.info ('Todo item updated', result)
+        //return todoUpdate as TodoUpdate
     }
 
     async deleteTodoItem(todoId: string, userId: string): Promise<string>{

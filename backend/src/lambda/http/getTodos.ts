@@ -21,9 +21,7 @@ export const handler = middy(
     }
   }
 )
-    // const todos = '...'
 
-    // return undefined
 
 handler.use(
   cors({
